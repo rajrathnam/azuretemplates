@@ -6,12 +6,41 @@
             "type": "string"
         },
         "location": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "westeurope"
         },
         "sku": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "Standard"
         },
         "tier": {
+            "type": "string",
+            "defaultValue": "Regional"
+        },
+        "subnetId": {
+            "type": "string"
+        },
+        "clusterIP": {
+            "type": "string"
+        },
+        "addIP": {
+            "type": "string"
+        },
+        "probePort": {
+            "type": "string",
+            "defaultValue": "62000"
+        },
+        "addprobePort": {
+            "type": "string",
+            "defaultValue": "62500"
+        },
+        "resourceGroup": {
+            "type": "string"
+        },
+        "nic1": {
+            "type": "string"
+        },
+        "nic2": {
             "type": "string"
         }
     },
@@ -28,47 +57,47 @@
                     {
                         "name": "SAP",
                         "properties": {
-                            "privateIPAddress": "10.239.41.176",
+                            "privateIPAddress": "[parameters('clusterIP')]",
                             "privateIPAddressVersion": "IPv4",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg-beachhead-TIMSFT/providers/Microsoft.Network/virtualNetworks/vnetgw-beachhead-TIMSFT/subnets/NT5OQ_Subnet"
+                                "id": "[parameters('subnetId')]"
                             }
                         }
                     },
                     {
-                        "name": "AO",
+                        "name": "ADD",
                         "properties": {
-                            "privateIPAddress": "10.239.41.175",
+                            "privateIPAddress": "[parameters('addIP')]",
                             "privateIPAddressVersion": "IPv4",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg-beachhead-TIMSFT/providers/Microsoft.Network/virtualNetworks/vnetgw-beachhead-TIMSFT/subnets/NT5OQ_Subnet"
+                                "id": "[parameters('subnetId')]"
                             }
                         }
                     }
                 ],
                 "backendAddressPools": [
                     {
-                        "name": "IAO_Pool"
+                        "name": "[concat(parameters('name'), '_pool')]"
                     }
                 ],
                 "probes": [
                     {
-                        "name": "IAO_LB_SAP_Probe",
+                        "name": "[concat(parameters('name'), '_LB_SAP_Probe')]",
                         "properties": {
                             "protocol": "Tcp",
-                            "port": 62000,
+                            "port": "[parameters('probePort')]",
                             "requestPath": null,
                             "intervalInSeconds": 5,
                             "numberOfProbes": 1
                         }
                     },
                     {
-                        "name": "IAO_LB_AO_Probe",
+                        "name": "[concat(parameters('name'), '_LB_ADD_Probe')]",
                         "properties": {
                             "protocol": "Tcp",
-                            "port": 62500,
+                            "port": "[parameters('addprobePort')]",
                             "requestPath": null,
                             "intervalInSeconds": 5,
                             "numberOfProbes": 1
@@ -77,10 +106,10 @@
                 ],
                 "loadBalancingRules": [
                     {
-                        "name": "IAO_LB_rule",
+                        "name": "[concat(parameters('name'), '_LB_rule')]",
                         "properties": {
                             "frontendIPConfiguration": {
-                                "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg_IAO/providers/Microsoft.Network/loadBalancers/IAO_LB/frontendIPConfigurations/SAP"
+                                "id": "[concat('/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/',parameters('resourceGroup'),'/providers/Microsoft.Network/loadBalancers/',parameters('name'),'/frontendIPConfigurations/SAP')]"
                             },
                             "frontendPort": 0,
                             "backendPort": 0,
@@ -89,22 +118,22 @@
                             "protocol": "All",
                             "loadDistribution": "Default",
                             "probe": {
-                                "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg_IAO/providers/Microsoft.Network/loadBalancers/IAO_LB/probes/IAO_LB_SAP_Probe"
+                                "id": "[concat('/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/',parameters('resourceGroup'),'/providers/Microsoft.Network/loadBalancers/',parameters('name'),'/probes/',parameters('name'), '_LB_SAP_Probe')]"
                             },
                             "disableOutboundSnat": true,
                             "enableTcpReset": false,
                             "backendAddressPools": [
                                 {
-                                    "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg_IAO/providers/Microsoft.Network/loadBalancers/IAO_LB/backendAddressPools/IAO_Pool"
+                                    "id": "[concat('/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/',parameters('resourceGroup'),'/providers/Microsoft.Network/loadBalancers/',parameters('name'),'/backendAddressPools/',parameters('name'), '_pool')]"
                                 }
                             ]
                         }
                     },
                     {
-                        "name": "IAO_LB_AO_Rule",
+                        "name": "[concat(parameters('name'), '_ADD_rule')]",
                         "properties": {
                             "frontendIPConfiguration": {
-                                "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg_IAO/providers/Microsoft.Network/loadBalancers/IAO_LB/frontendIPConfigurations/AO"
+                                "id": "[concat('/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/',parameters('resourceGroup'),'/providers/Microsoft.Network/loadBalancers/',parameters('name'),'/frontendIPConfigurations/ADD')]"
                             },
                             "frontendPort": 0,
                             "backendPort": 0,
@@ -113,13 +142,13 @@
                             "protocol": "All",
                             "loadDistribution": "Default",
                             "probe": {
-                                "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg_IAO/providers/Microsoft.Network/loadBalancers/IAO_LB/probes/IAO_LB_AO_Probe"
+                                "id": "[concat('/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/',parameters('resourceGroup'),'/providers/Microsoft.Network/loadBalancers/',parameters('name'),'/probes/',parameters('name'), '_LB_ADD_Probe')]"
                             },
                             "disableOutboundSnat": true,
                             "enableTcpReset": false,
                             "backendAddressPools": [
                                 {
-                                    "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg_IAO/providers/Microsoft.Network/loadBalancers/IAO_LB/backendAddressPools/IAO_Pool"
+                                    "id": "[concat('/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/',parameters('resourceGroup'),'/providers/Microsoft.Network/loadBalancers/',parameters('name'),'/backendAddressPools/',parameters('name'), '_pool')]"
                                 }
                             ]
                         }
@@ -137,14 +166,11 @@
             "apiVersion": "2017-05-10",
             "type": "Microsoft.Resources/deployments",
             "name": "NicUpdate-a1811cda-617f-49e9-b6d6-fd19a5f2958e-20221025085257",
-            "resourceGroup": "rg_RIO",
+            "resourceGroup": "[parameters('resourceGroup')]",
             "dependsOn": [
-                "Microsoft.Network/loadBalancers/IAO_LB"
+                "[concat('Microsoft.Network/loadBalancers/',parameters('name'))]"
             ],
             "properties": {
-                "expressionEvaluationOptions": {
-                    "scope": "inner"
-                },
                 "mode": "Incremental",
                 "parameters": {},
                 "template": {
@@ -156,29 +182,22 @@
                         {
                             "apiVersion": "2021-08-01",
                             "type": "Microsoft.Network/networkInterfaces",
-                            "name": "ao1-nic",
-                            "location": "westeurope",
+                            "name": "[parameters('nic1')]",
+                            "location": "[parameters('location')]",
                             "properties": {
-                                "provisioningState": "Succeeded",
-                                "resourceGuid": "80eb55b0-a001-45d6-9ed4-ebb019442066",
                                 "ipConfigurations": [
                                     {
                                         "name": "ipconfig1",
-                                        "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg_IAO/providers/Microsoft.Network/networkInterfaces/ao1-nic/ipConfigurations/ipconfig1",
+                                        "id": "[concat('/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/',parameters('resourceGroup'),'/providers/Microsoft.Network/networkInterfaces/',parameters('nic1'),'/ipConfigurations/ipconfig1')]",
                                         "etag": "W/\"2e54ee27-16a8-4391-9a48-5884fc314f69\"",
                                         "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
                                         "properties": {
-                                            "provisioningState": "Succeeded",
-                                            "privateIPAddress": "10.239.41.170",
-                                            "privateIPAllocationMethod": "Static",
                                             "subnet": {
-                                                "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg-beachhead-TIMSFT/providers/Microsoft.Network/virtualNetworks/vnetgw-beachhead-TIMSFT/subnets/NT5OQ_Subnet"
+                                                "id": "[parameters('subnetId')]"
                                             },
-                                            "primary": true,
-                                            "privateIPAddressVersion": "IPv4",
                                             "loadBalancerBackendAddressPools": [
                                                 {
-                                                    "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourcegroups/rg_IAO/providers/Microsoft.Network/loadBalancers/IAO_LB/backendAddressPools/IAO_Pool"
+                                                    "id": "[concat('/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/',parameters('resourceGroup'),'/providers/Microsoft.Network/loadBalancers/',parameters('name'),'/backendAddressPools/',parameters('name'), '_pool')]"
                                                 }
                                             ],
                                             "loadBalancerInboundNatRules": []
@@ -196,14 +215,10 @@
                                     ],
                                     "internalDomainNameSuffix": "epgoxqqovsmedfsejlx0i0sk3b.ax.internal.cloudapp.net"
                                 },
-                                "macAddress": "00-0D-3A-2B-B5-11",
                                 "enableAcceleratedNetworking": false,
                                 "vnetEncryptionSupported": false,
                                 "enableIPForwarding": false,
                                 "primary": true,
-                                "virtualMachine": {
-                                    "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg_IAO/providers/Microsoft.Compute/virtualMachines/WAZQIAO-1"
-                                },
                                 "hostedWorkloads": [],
                                 "tapConfigurations": [],
                                 "nicType": "Standard"
@@ -219,14 +234,11 @@
             "apiVersion": "2017-05-10",
             "type": "Microsoft.Resources/deployments",
             "name": "NicUpdate-441b9781-3eda-4fe4-9f29-4c01ac849b80-20221025085257",
-            "resourceGroup": "rg_RIO",
+            "resourceGroup": "[parameters('resourceGroup')]",
             "dependsOn": [
-                "Microsoft.Network/loadBalancers/IAO_LB"
+                "[concat('Microsoft.Network/loadBalancers/',parameters('name'))]"
             ],
             "properties": {
-                "expressionEvaluationOptions": {
-                    "scope": "inner"
-                },
                 "mode": "Incremental",
                 "parameters": {},
                 "template": {
@@ -238,29 +250,23 @@
                         {
                             "apiVersion": "2021-08-01",
                             "type": "Microsoft.Network/networkInterfaces",
-                            "name": "ao2-nic",
-                            "location": "westeurope",
+                            "name": "[parameters('nic2')]",
+                            "location": "[parameters('location')]",
                             "properties": {
                                 "provisioningState": "Succeeded",
-                                "resourceGuid": "5b799d73-37a8-4683-8be5-599f0bbcc190",
                                 "ipConfigurations": [
                                     {
                                         "name": "ipconfig1",
-                                        "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg_IAO/providers/Microsoft.Network/networkInterfaces/ao2-nic/ipConfigurations/ipconfig1",
+                                        "id": "[concat('/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/',parameters('resourceGroup'),'/providers/Microsoft.Network/networkInterfaces/',parameters('nic2'),'/ipConfigurations/ipconfig1')]",
                                         "etag": "W/\"816aaa97-dd9f-4605-8dbb-fd9c4a85fcfe\"",
                                         "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
                                         "properties": {
-                                            "provisioningState": "Succeeded",
-                                            "privateIPAddress": "10.239.41.171",
-                                            "privateIPAllocationMethod": "Static",
                                             "subnet": {
-                                                "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg-beachhead-TIMSFT/providers/Microsoft.Network/virtualNetworks/vnetgw-beachhead-TIMSFT/subnets/NT5OQ_Subnet"
+                                                "id": "[parameters('subnetId')]"
                                             },
-                                            "primary": true,
-                                            "privateIPAddressVersion": "IPv4",
                                             "loadBalancerBackendAddressPools": [
                                                 {
-                                                    "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourcegroups/rg_IAO/providers/Microsoft.Network/loadBalancers/IAO_LB/backendAddressPools/IAO_Pool"
+                                                    "id": "[concat('/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/',parameters('resourceGroup'),'/providers/Microsoft.Network/loadBalancers/',parameters('name'),'/backendAddressPools/',parameters('name'), '_pool')]"
                                                 }
                                             ],
                                             "loadBalancerInboundNatRules": []
@@ -278,14 +284,10 @@
                                     ],
                                     "internalDomainNameSuffix": "epgoxqqovsmedfsejlx0i0sk3b.ax.internal.cloudapp.net"
                                 },
-                                "macAddress": "60-45-BD-96-FD-9B",
                                 "enableAcceleratedNetworking": false,
                                 "vnetEncryptionSupported": false,
                                 "enableIPForwarding": false,
                                 "primary": true,
-                                "virtualMachine": {
-                                    "id": "/subscriptions/2e3da591-1da8-437b-8c2e-81565bd2cfa4/resourceGroups/rg_IAO/providers/Microsoft.Compute/virtualMachines/WAZQIAO-2"
-                                },
                                 "hostedWorkloads": [],
                                 "tapConfigurations": [],
                                 "nicType": "Standard"
@@ -299,4 +301,3 @@
         }
     ]
 }
-
